@@ -1,6 +1,9 @@
 var dist_map = {}; // dist_map['SEA_DEN'] -> 1021
 function submit_form(event) {
-    let queryset = document.getElementById('content_box1').value;
+    // Make upper-case
+    let content_box = document.getElementById('content_box1');
+    content_box.value = content_box.value.toUpperCase();
+    let queryset = content_box.value;
     // Split query up by commas into separate routes
     let querys = queryset.split(',')
     let routes = [];
