@@ -64,7 +64,7 @@ def get_mileage_run(goal_miles=10000, start='SEA', end='SEA', max_flights=6):
 
 runs = get_mileage_run()
 for miles, route in runs:
-    print(f'Route: {route} - {miles} mi')
+    print(f'Route: {" -> ".join(route)} : {miles:,.0f} mi')
 
 # for start, destination, price, miles in trip_miles.to_numpy():
 #     lat_s, lon_s = airport_code_to_position[start]
