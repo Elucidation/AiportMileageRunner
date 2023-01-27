@@ -32,7 +32,7 @@ function getEdgeKey(start, destination) {
 
 function generate_route_html(single_route) {
     let total_distance = 0;
-    let output = '<ol>';
+    let output = '<table><tr><th>Trip</th><th>Base Miles</th></tr>';
     single_route.forEach(trip => {
         start = trip[0];
         destination = trip[1];
@@ -40,10 +40,10 @@ function generate_route_html(single_route) {
         if (miles) {
             total_distance += miles;
         }
-        output += `<li>${start} → ${destination} : ${miles ? miles+' miles' : '<em>Not in database</em>'}</li>`
+        output += `<tr><td>${start} → ${destination}</td><td>${miles ? miles : '<em>Not in database</em>'}</td></tr>`
     });
-    output += '</ol>'
-    output += `<p>Total Base Miles: ${total_distance} miles</p>`
+    output += `<tr><td><strong>Total</strong></td><td>${total_distance}</td></tr>`
+    output += '</table>'
     return output;
 }
 
