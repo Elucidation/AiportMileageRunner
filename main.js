@@ -37,7 +37,7 @@ function update_results(routes) {
         if (miles) {
             total_distance += miles;
         }
-        results_box.innerHTML += `<li>${start} → ${destination} : ${miles} ${miles || 'Not in DB'} base miles</li>`
+        results_box.innerHTML += `<li>${start} → ${destination} : ${miles ? miles+' miles' : '<em>Not in database</em>'}</li>`
     });
     results_box.innerHTML += '</ol>'
     results_box.innerHTML += `<p>Total Base Miles: ${total_distance} miles</p>`
