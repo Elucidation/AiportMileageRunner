@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Alaska Mileage Calculator</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel='stylesheet' type='text/css' media='screen' href='main.css'>
+    <!-- Load d3.js -->
+    <script src="https://d3js.org/d3.v6.js"></script>
+</head>
+
+<body>
+    <h1>Alaska Mileage Calculator</h1>
+    <form id="form_box">
+        Enter Routes:
+        <input type="text" id="content_box1" placeholder="SEA DEN">
+        <input type="submit" id="submit_button" value="Submit">
+    </form>
+    <div>
+        <hr>
+        <div id="results">None</div>
+        <hr>
+    </div>
+
+    <p>
+        Examples:
+    <ol>
+        <li><strong>SEA DEN</strong> (Seattle to Denver)</li>
+        <li><strong>DFW LAX DCA</strong> (Los Angeles to DCA)</li>
+        <li><strong>BOS SEA, HNL SEA</strong> (Boston To Seattle, Honolulu to Seattle)</li>
+    </ol>
+    </p>
+
+    <p><em>Note: Unofficial, and route mileage was calculated as of Jan 2023.</em></p>
+
+    <script type="text/javascript">
+        var dist_map = {}; // dist_map['SEA_DEN'] -> 1021
+
+        document.getElementById("form_box").onsubmit = function (event) {
+            let queryset = document.getElementById('content_box1').value;
+            // Split query up by commas into separate routes
+            let querys = queryset.split(',')
+            let routes = [];
+            for (const query in querys) {
+                let parts = querys[query].match(/[^ ]+/g);
+                if (parts.length <= 1) {
+                    continue;
+                }
+                for (let i = 0; i < parts.length - 1; i++) {
+                    let a = parts[i];
+                    let b = parts[i + 1];
+                    let key = getEdgeKey(a, b);
+                    let dist = dist_map[key];
+                    routes.push([a, b, dist]);
+                }
+
+            }
+            update_results(routes);
+            event.preventDefault(); // Don't reload page
+        }
+
+        function getEdgeKey(start, destination) {
+            return start + '_' + destination;
+        }
+
+        function update_results(routes) {
+            let total_distance = 0;
+            let results_box = document.getElementById('results');
+            results_box.innerHTML = '<ol>';
+            routes.forEach(route => {
+                start = route[0];
+                destination = route[1];
+                miles = route[2];
+                if (miles) {
+                    total_distance += miles;
+                }
+                results_box.innerHTML += `<li>${start} → ${destination} : ${miles | 'Not in DB'} miles</li>`
+            });
+            results_box.innerHTML += '</ol>'
+            results_box.innerHTML += `<p>Total Miles: ${total_distance} miles</p>`
+
+        }
+
+        Promise.all([
+            d3.csv('./city_pair_alaska_miles.csv')
+        ]).then(
+            function (initialize) {
+                let city_pair_alaska_miles = initialize[0];
+                // ex. city_pair_alaska_miles[0] -> {start: 'ABQ', destination: 'SEA', miles: '1178'}
+                city_pair_alaska_miles.forEach(element => {
+                    let key = getEdgeKey(element.start, element.destination); // ABQ_SEA
+                    dist_map[key] = parseInt(element.miles);
+                });
+            }
+        )
+    </script>
+</body>
+
+</html>
