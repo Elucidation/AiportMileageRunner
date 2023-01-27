@@ -13,7 +13,7 @@ function submit_form(event) {
             let a = parts[i];
             let b = parts[i + 1];
             let key = getEdgeKey(a, b);
-            let dist = dist_map[key];
+            let dist = dist_map[key]; // undefined if edge not there.
             routes.push([a, b, dist]);
         }
 
@@ -37,10 +37,10 @@ function update_results(routes) {
         if (miles) {
             total_distance += miles;
         }
-        results_box.innerHTML += `<li>${start} → ${destination} : ${miles | 'Not in DB'} miles</li>`
+        results_box.innerHTML += `<li>${start} → ${destination} : ${miles} ${miles || 'Not in DB'} base miles</li>`
     });
     results_box.innerHTML += '</ol>'
-    results_box.innerHTML += `<p>Total Miles: ${total_distance} miles</p>`
+    results_box.innerHTML += `<p>Total Base Miles: ${total_distance} miles</p>`
 
 }
 
