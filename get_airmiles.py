@@ -1,6 +1,7 @@
 import pandas as pd
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 from collections import deque
+import sys
 
 airport_locations = pd.read_csv(r'airport_locations.csv').set_index('iata')
 airport_code_to_position = airport_locations.T.to_dict('list')
@@ -40,13 +41,13 @@ def get_edges(iata):
     # [[dest, miles],...]
 
 
-def get_mileage_run(goal_miles=10000, start='SEA', end='SEA', max_flights=6):
+def get_mileage_run(goal_miles=10000, start='SEA', end='DEN', max_flights=6):
     start_block = [0, [start]] # [miles, path]
     stack = deque([start_block])
     runs = []
     while stack:
         miles, path = stack.popleft()
-        if len(path) >= max_flights:
+        if len(path) > max_flights:
             # runs.append([miles, path])
             continue
         if miles > goal_miles and path[-1] == end:
@@ -59,14 +60,34 @@ def get_mileage_run(goal_miles=10000, start='SEA', end='SEA', max_flights=6):
             stack.append([new_miles, new_path])
             # todo still
         # print(stack)
-    runs = sorted(runs, reverse=True)
+    runs = sorted(runs)
     return runs
-
-runs = get_mileage_run()
-for miles, route in runs:
-    print(f'Route: {" -> ".join(route)} : {miles:,.0f} mi')
 
 # for start, destination, price, miles in trip_miles.to_numpy():
 #     lat_s, lon_s = airport_code_to_position[start]
 #     lat_d, lon_d = airport_code_to_position[destination]
 #     print(f'{start} {destination} {[[lon_s, lat_s], [lon_d, lat_d]]}')
+
+if __name__ == "__main__":
+    goal_miles = 10000
+    start = 'SEA'
+    end = 'SEA'
+    max_flights=6
+    if len(sys.argv) == 2:
+        goal_miles = int(sys.argv[1])
+    elif len(sys.argv) == 3:
+        goal_miles = int(sys.argv[1])
+        start = sys.argv[2]
+    elif len(sys.argv) == 4:
+        goal_miles = int(sys.argv[1])
+        start = sys.argv[2]
+        end = sys.argv[3]
+    elif len(sys.argv) == 5:
+        goal_miles = int(sys.argv[1])
+        start = sys.argv[2]
+        end = sys.argv[3]
+        max_flights = int(sys.argv[4])
+        
+    runs = get_mileage_run(goal_miles, start, end, max_flights)
+    for miles, route in runs[:20]:
+        print(f'Route: {" -> ".join(route)} : {miles:,.0f} mi')
