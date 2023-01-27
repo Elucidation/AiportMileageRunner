@@ -9,17 +9,18 @@ function submit_form(event) {
     let routes = [];
     for (const query in querys) {
         let parts = querys[query].match(/[^ ]+/g);
+        let route = [];
         if (parts.length <= 1) {
-            continue;
+            continue; // Need at least 2 cities in route, skip.
         }
         for (let i = 0; i < parts.length - 1; i++) {
             let a = parts[i];
             let b = parts[i + 1];
             let key = getEdgeKey(a, b);
             let dist = dist_map[key]; // undefined if edge not there.
-            routes.push([a, b, dist]);
+            route.push([a, b, dist]);
         }
-
+        routes.push(route);
     }
     update_results(routes);
     event.preventDefault(); // Don't reload page
@@ -29,22 +30,36 @@ function getEdgeKey(start, destination) {
     return start + '_' + destination;
 }
 
-function update_results(routes) {
+function generate_route_html(single_route) {
     let total_distance = 0;
-    let results_box = document.getElementById('results');
-    results_box.innerHTML = '<ol>';
-    routes.forEach(route => {
-        start = route[0];
-        destination = route[1];
-        miles = route[2];
+    let output = '<ol>';
+    single_route.forEach(trip => {
+        start = trip[0];
+        destination = trip[1];
+        miles = trip[2];
         if (miles) {
             total_distance += miles;
         }
-        results_box.innerHTML += `<li>${start} → ${destination} : ${miles ? miles+' miles' : '<em>Not in database</em>'}</li>`
+        output += `<li>${start} → ${destination} : ${miles ? miles+' miles' : '<em>Not in database</em>'}</li>`
     });
-    results_box.innerHTML += '</ol>'
-    results_box.innerHTML += `<p>Total Base Miles: ${total_distance} miles</p>`
+    output += '</ol>'
+    output += `<p>Total Base Miles: ${total_distance} miles</p>`
+    return output;
+}
 
+function update_results(routes) {
+    // Make not hidden.
+    document.getElementById('results_article').removeAttribute('hidden');
+    
+    let results_box = document.getElementById('results');
+    let output = '<ol>';
+    routes.forEach(route => {
+        route_output = generate_route_html(route);
+        output += `<li>${route_output}</li>`;
+    })
+    output += '</ol>';
+    
+    results_box.innerHTML = output;
 }
 
 // Load city-city distance dictionary from CSV file.
