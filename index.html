@@ -21,16 +21,17 @@
         <input type="text" id="content_box1" placeholder="SEA DEN">
         <input type="submit" id="submit_button" value="Submit">
     </form>
+
     <article id="results_article" hidden>
         <div id="results"></div>
     </article>
+
     <div>
-        <summary>Examples</summary>
-        <ol>
-            <li><strong>SEA DEN</strong> (Seattle to Denver)</li>
-            <li><strong>DFW LAX DCA</strong> (Los Angeles to DCA)</li>
-            <li><strong>BOS SEA, HNL SEA</strong> (Boston To Seattle, Honolulu to Seattle)</li>
-        </ol>
+        <p><em>Examples</em> <cite>(click to try)</cite></p>
+        <li><kbd onclick="run_query('SEA DEN')">SEA DEN</kbd> <cite>(Seattle to Denver)</cite></li>
+        <li><kbd onclick="run_query('DFW LAX DCA')">DFW LAX DCA</kbd> <cite>(Los Angeles to DCA)</cite></li>
+        <li><kbd onclick="run_query('BOS SEA, SEA HNL SEA')">BOS SEA, SEA HNL SEA</kbd> <cite>(Boston To Seattle,
+                Seattle to Honolulu and back)</cite></li>
     </div>
 
     <footer>Unofficial. Uses Alaska Airlines base miles, not actual distance. Dataset from Jan 2023.</footer>
@@ -38,6 +39,12 @@
     <script type="text/javascript">
         let form_box = document.getElementById("form_box");
         form_box.onsubmit = submit_form;
+
+        function run_query(query) {
+            let content_box = document.getElementById('content_box1');
+            content_box.value = query;
+            submit_form();
+        }
     </script>
 </body>
 

@@ -23,7 +23,8 @@ function submit_form(event) {
         routes.push(route);
     }
     update_results(routes);
-    event.preventDefault(); // Don't reload page
+    if (event)
+        event.preventDefault(); // Don't reload page
 }
 
 function getEdgeKey(start, destination) {
@@ -50,7 +51,7 @@ function generate_route_html(single_route) {
 function update_results(routes) {
     // Make not hidden.
     document.getElementById('results_article').removeAttribute('hidden');
-    
+
     let results_box = document.getElementById('results');
     let output = '<ol>';
     routes.forEach(route => {
@@ -58,7 +59,7 @@ function update_results(routes) {
         output += `<li>${route_output}</li>`;
     })
     output += '</ol>';
-    
+
     results_box.innerHTML = output;
 }
 
