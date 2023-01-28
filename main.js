@@ -138,7 +138,7 @@ function generateUsMap() {
         .selectAll("path")
         .data(asa_points)
         .enter().append("path")
-        .attr("fill", "rgb(121, 273, 140)")
+        .attr("fill", "rgb(121, 193, 10)")
         .attr("stroke", "none")
         .attr("d", path)
 
@@ -166,8 +166,9 @@ function generateUsMap() {
         })
         .text(d => { return d.iata; })
         .attr('x', -9)
-        .attr('fill', 'black')
+        .attr('fill', 'rgb(121, 193, 10)')
         .attr('y', -5)
+        .attr("font-weight", "bold")
         .attr("font-size", ".65em");
 }
 
