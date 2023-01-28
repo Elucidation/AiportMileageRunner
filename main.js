@@ -59,6 +59,7 @@ function update_results(routes) {
         output += `<li>${route_output}</li>`;
     })
     output += '</ol>';
+    draw_routes(routes);
 
     results_box.innerHTML = output;
 }
@@ -72,8 +73,9 @@ function run_query(query) {
 var projection;
 var path;
 var asa_points;
+var svg;
 
-function generateUsMap(us, iata_locations) {
+function generateUsMap() {
     // Composite Mercator projection for the US
     geoMercatorUsa = function (width, height, scale) {
         let continental = d3.geoMercator()
@@ -111,7 +113,7 @@ function generateUsMap(us, iata_locations) {
     let height = 500;
     let scale = 800;
 
-    let svg = d3.select("usmap")
+    svg = d3.select("usmap")
         .append("svg")
         .attr("width", width)
         .attr("height", height);
@@ -120,6 +122,7 @@ function generateUsMap(us, iata_locations) {
     path = d3.geoPath(projection);
     path.pointRadius(2);
 
+    // Draw US borders.
     svg.append("g")
         .attr("class", "states")
         .selectAll("path")
@@ -129,13 +132,6 @@ function generateUsMap(us, iata_locations) {
         .attr("stroke", "black")
         .attr("d", path)
 
-    // Filter IATA locations to those Alaska Airlines has
-    let alaska_iatas = new Set(['ABQ', 'ADK', 'ADQ', 'ANC', 'ATL', 'AUS', 'BET', 'BLI', 'BNA', 'BOI', 'BOS', 'BRW', 'BUR', 'BWI', 'CDV', 'CHS', 'CUN', 'DCA', 'DEN', 'DFW', 'DTW', 'EWR', 'FAI', 'FLL', 'GDL', 'GEG', 'HAV', 'HNL', 'IAD', 'IAH', 'IND', 'JFK', 'JNU', 'KOA', 'KTN', 'LAS', 'LAX', 'LIH', 'LIR', 'LTO', 'LWS', 'MCI', 'MCO', 'MEX', 'MSP', 'MSY', 'MZT', 'OAK', 'OGG', 'OMA', 'OME', 'ONT', 'ORD', 'OTZ', 'PDX', 'PHL', 'PHX', 'PSG', 'PSP', 'PUW', 'PVR', 'RDU', 'SAN', 'SAT', 'SBA', 'SCC', 'SEA', 'SFO', 'SIT', 'SJC', 'SJD', 'SJO', 'SLC', 'SMF', 'SNA', 'STL', 'TPA', 'TUS', 'WRG', 'YAK', 'YVR', 'ZIH', 'ZLO']);
-    let alaska_iata_locations = iata_locations.filter(function ({ iata, longitude, latitude }) { return alaska_iatas.has(iata); })
-
-    asa_points = alaska_iata_locations.map(({ iata, longitude, latitude }) => {
-        return { type: "Feature", 'iata': iata, geometry: { type: "Point", coordinates: [longitude, latitude] } };
-    });
     // Draw city circles using path
     svg.append("g")
         .attr("class", "iatas")
@@ -159,8 +155,8 @@ function generateUsMap(us, iata_locations) {
     //     .attr("r", 2)
     //     .style("fill", "red");
 
-    svg
-        .append("g")
+    svg.append("g")
+        .attr("class", "iata_labels")
         .selectAll("text")
         .data(asa_points)
         .join("text")
@@ -175,7 +171,37 @@ function generateUsMap(us, iata_locations) {
         .attr("font-size", ".65em");
 }
 
+function draw_routes(routes) {
+    // Draw routes onto map
+    d3.selectAll(".iata_routes").remove();
+    let links = [];
+    let routes_data = routes.forEach(route => {
+        // ex. route = [['HNL', 'SEA', 2675],['SEA', 'HNL', 2675]]
+        route.forEach(trip => {
+            let a = iata_location_map[trip[0]];
+            let b = iata_location_map[trip[1]];
+            let linestring = {
+                type: "LineString",
+                coordinates: [[a.longitude, a.latitude], [b.longitude, b.latitude]]
+            }
+
+            links.push(linestring);
+        })
+    })
+    svg.append("g")
+        .attr("class", "iata_routes")
+        .selectAll("routes")
+        .data(links)
+        .enter()
+        .append("path")
+        .attr("d", function (d) { return path(d) })
+        .style("fill", "none")
+        .style("stroke", "orange")
+        .style("stroke-width", 7)
+}
+
 var us;
+var iata_location_map = {};
 
 // Load city-city distance dictionary from CSV file.
 Promise.all([
@@ -194,6 +220,18 @@ Promise.all([
             dist_map[key] = parseInt(element.miles);
         });
 
-        generateUsMap(us, iata_locations);
+        // Filter IATA locations to those Alaska Airlines has
+        let alaska_iatas = new Set(['ABQ', 'ADK', 'ADQ', 'ANC', 'ATL', 'AUS', 'BET', 'BLI', 'BNA', 'BOI', 'BOS', 'BRW', 'BUR', 'BWI', 'CDV', 'CHS', 'CUN', 'DCA', 'DEN', 'DFW', 'DTW', 'EWR', 'FAI', 'FLL', 'GDL', 'GEG', 'HAV', 'HNL', 'IAD', 'IAH', 'IND', 'JFK', 'JNU', 'KOA', 'KTN', 'LAS', 'LAX', 'LIH', 'LIR', 'LTO', 'LWS', 'MCI', 'MCO', 'MEX', 'MSP', 'MSY', 'MZT', 'OAK', 'OGG', 'OMA', 'OME', 'ONT', 'ORD', 'OTZ', 'PDX', 'PHL', 'PHX', 'PSG', 'PSP', 'PUW', 'PVR', 'RDU', 'SAN', 'SAT', 'SBA', 'SCC', 'SEA', 'SFO', 'SIT', 'SJC', 'SJD', 'SJO', 'SLC', 'SMF', 'SNA', 'STL', 'TPA', 'TUS', 'WRG', 'YAK', 'YVR', 'ZIH', 'ZLO']);
+        let alaska_iata_locations = iata_locations.filter(function ({ iata, longitude, latitude }) { return alaska_iatas.has(iata); })
+        alaska_iata_locations.forEach(entry => {
+            iata_location_map[entry.iata] = entry;
+        })
+
+
+        asa_points = alaska_iata_locations.map(({ iata, longitude, latitude }) => {
+            return { type: "Feature", 'iata': iata, geometry: { type: "Point", coordinates: [longitude, latitude] } };
+        });
+
+        generateUsMap();
     }
 )
