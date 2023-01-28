@@ -16,7 +16,7 @@
 
 <body>
     <h1>Alaska Mileage Calculator</h1>
-    <form id="form_box">
+    <form id="form_box" onsubmit="submit_form();">
         Enter Routes:
         <input type="text" id="content_box1" placeholder="SEA DEN">
         <input type="submit" id="submit_button" value="Submit">
@@ -54,11 +54,6 @@
     
 
     <footer>Unofficial. Uses Alaska Airlines base miles, not actual distance. Dataset from Jan 2023.</footer>
-
-    <script type="text/javascript">
-        let form_box = document.getElementById("form_box");
-        form_box.onsubmit = submit_form;
-    </script>
 </body>
 
 </html>
