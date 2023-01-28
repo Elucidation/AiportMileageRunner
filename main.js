@@ -76,49 +76,19 @@ var asa_points;
 var svg;
 
 function generateUsMap() {
-    // Composite Mercator projection for the US
-    geoMercatorUsa = function (width, height, scale) {
-        let continental = d3.geoMercator()
-            .center([-98.58, 39.83])
-            .translate([width * 0.5, height * 0.42])
-            .scale(scale);
-
-        let hawaii = d3.geoMercator()
-            .center([-157.25, 20.8])
-            .scale(scale)
-            .translate([width * 0.35, height * 0.87])
-
-        let alaska = d3.geoMercator()
-            .center([-152.5, 65])
-            .translate([width * 0.15, height * 0.8])
-            .scale(scale * 0.3)
-
-        let projection = d3.geoTransform({
-            point: function (x, y) {
-                if (y < 50 && x < -140) {
-                    this.stream.point(...hawaii([x, y]));
-                }
-                else if (y > 50) {
-                    this.stream.point(...alaska([x, y]));
-                }
-                else {
-                    this.stream.point(...continental([x, y]));
-                }
-            }
-        });
-        return projection;
-    }
-
     let width = 960;
-    let height = 550;
-    let scale = 800;
+    let height = 650;
+    let scale = 400;
 
     svg = d3.select("usmap")
         .append("svg")
         .attr("width", width)
         .attr("height", height);
 
-    projection = geoMercatorUsa(width, height, scale);
+    projection = d3.geoMercator()
+        .center([-98.58, 39.83])
+        .translate([width * 0.5, height * 0.72])
+        .scale(scale);
     path = d3.geoPath(projection);
     path.pointRadius(2);
 
