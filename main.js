@@ -63,6 +63,12 @@ function update_results(routes) {
     results_box.innerHTML = output;
 }
 
+function run_query(query) {
+    let content_box = document.getElementById('content_box1');
+    content_box.value = query;
+    submit_form();
+}
+
 // Load city-city distance dictionary from CSV file.
 Promise.all([
     d3.csv('./city_pair_alaska_miles.csv')

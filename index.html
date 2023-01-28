@@ -6,9 +6,9 @@
     <meta http-equiv='X-UA-Compatible' content='IE=edge'>
     <title>Alaska Mileage Calculator</title>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <!-- <link rel='stylesheet' type='text/css' media='screen' href='main.css'> -->
     <!-- Load simple.css -->
     <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+    <link rel='stylesheet' type='text/css' media='screen' href='main.css'>
     <!-- Load d3.js -->
     <script src="https://d3js.org/d3.v6.js"></script>
     <script type="text/javascript" src="main.js"></script>
@@ -28,9 +28,9 @@
 
     <div>
         <p><em>Examples</em> <cite>(click to try)</cite></p>
-        <li><kbd onclick="run_query('SEA DEN')">SEA DEN</kbd> <cite>(Seattle to Denver)</cite></li>
-        <li><kbd onclick="run_query('DFW LAX DCA')">DFW LAX DCA</kbd> <cite>(Los Angeles to DCA)</cite></li>
-        <li><kbd onclick="run_query('BOS SEA, SEA HNL SEA')">BOS SEA, SEA HNL SEA</kbd> <cite>(Boston To Seattle,
+        <li><example onclick="run_query('SEA DEN')">SEA DEN</example> <cite>(Seattle to Denver)</cite></li>
+        <li><example onclick="run_query('DFW LAX DCA')">DFW LAX DCA</example> <cite>(Los Angeles to DCA)</cite></li>
+        <li><example onclick="run_query('BOS SEA, SEA HNL SEA')">BOS SEA, SEA HNL SEA</example> <cite>(Boston To Seattle,
                 Seattle to Honolulu and back)</cite></li>
     </div>
     <hr>
@@ -58,12 +58,6 @@
     <script type="text/javascript">
         let form_box = document.getElementById("form_box");
         form_box.onsubmit = submit_form;
-
-        function run_query(query) {
-            let content_box = document.getElementById('content_box1');
-            content_box.value = query;
-            submit_form();
-        }
     </script>
 </body>
 
