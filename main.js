@@ -149,14 +149,19 @@ function draw_routes(routes) {
     let routes_data = routes.forEach(route => {
         // ex. route = [['HNL', 'SEA', 2675],['SEA', 'HNL', 2675]]
         route.forEach(trip => {
-            let a = iata_location_map[trip[0]];
-            let b = iata_location_map[trip[1]];
-            let linestring = {
-                type: "LineString",
-                coordinates: [[a.longitude, a.latitude], [b.longitude, b.latitude]]
+            try {
+                let a = iata_location_map[trip[0]];
+                let b = iata_location_map[trip[1]];
+                let linestring = {
+                    type: "LineString",
+                    coordinates: [[a.longitude, a.latitude], [b.longitude, b.latitude]]
+                }
+
+                links.push(linestring);
+            } catch (error) {
+                console.error('Skipping', trip);
             }
 
-            links.push(linestring);
         })
     })
     svg.append("g")
