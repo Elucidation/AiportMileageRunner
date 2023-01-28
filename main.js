@@ -107,7 +107,6 @@ function generateUsMap(us, iata_locations) {
         return projection;
     }
 
-    // Demonstration:
     let width = 960;
     let height = 500;
     let scale = 800;
