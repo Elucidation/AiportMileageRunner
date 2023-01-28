@@ -198,7 +198,7 @@ function draw_routes(routes) {
         .attr("d", function (d) { return path(d) })
         .style("fill", "none")
         .style("stroke", "orange")
-        .style("stroke-width", 7)
+        .style("stroke-width", 2)
 }
 
 var us;

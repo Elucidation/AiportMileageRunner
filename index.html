@@ -17,7 +17,7 @@
 
 <body>
     <h1>Alaska Mileage Calculator</h1>
-    <form id="form_box" onsubmit="submit_form();">
+    <form id="form_box">
         Enter Routes:
         <input type="text" id="content_box1" placeholder="SEA DEN">
         <input type="submit" id="submit_button" value="Submit">
@@ -31,10 +31,19 @@
 
     <div>
         <p><em>Examples</em> <cite>(click to try)</cite></p>
-        <li><example onclick="run_query('SEA DEN')">SEA DEN</example> <cite>(Seattle to Denver)</cite></li>
-        <li><example onclick="run_query('DFW LAX DCA')">DFW LAX DCA</example> <cite>(Los Angeles to DCA)</cite></li>
-        <li><example onclick="run_query('BOS SEA, SEA HNL SEA')">BOS SEA, SEA HNL SEA</example> <cite>(Boston To Seattle,
-                Seattle to Honolulu and back)</cite></li>
+        <li>
+            <example onclick="run_query('SEA DEN')">SEA DEN</example>
+            <cite>(Seattle to Denver)</cite>
+        </li>
+        <li>
+            <example onclick="run_query('DFW LAX DCA')">DFW LAX DCA</example>
+            <cite>(Dallas to Los Angeles to Washington
+                D.C.)</cite>
+        </li>
+        <li>
+            <example onclick="run_query('PDX ANC, SEA BOS SAN')">PDX ANC, SEA BOS SAN</example>
+            <cite>(Portland to Anchorage, Seattle to Boston and San Diego)</cite>
+        </li>
     </div>
     <details>
         <summary>Some common city codes:</summary>
@@ -52,7 +61,11 @@
         <li>PIT - Pittsburgh</li>
         <li>DFW - Dallas</li>
         <li>SLC - Salt Lake City</li>
-    </details>   
+    </details>
+
+    <script type="text/javascript">
+        document.getElementById("form_box").onsubmit = submit_form;
+    </script>
 
     <footer>Unofficial. Uses Alaska Airlines base miles, not actual distance. Dataset from Jan 2023.</footer>
 </body>
