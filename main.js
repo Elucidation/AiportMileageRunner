@@ -69,16 +69,57 @@ function run_query(query) {
     submit_form();
 }
 
+var projection;
+var path;
+var asa_points;
+
 function generateUsMap(us, iata_locations) {
-    // Make Mercator stuff
-    var width = 1000;
-    var height = 650;
-    var svg = d3.select("usmap").append("svg")
+    // Composite Mercator projection for the US
+    geoMercatorUsa = function (width, height, scale) {
+        let continental = d3.geoMercator()
+            .center([-98.58, 39.83])
+            .translate([width * 0.5, height * 0.42])
+            .scale(scale);
+
+        let hawaii = d3.geoMercator()
+            .center([-157.25, 20.8])
+            .scale(scale)
+            .translate([width * 0.35, height * 0.87])
+
+        let alaska = d3.geoMercator()
+            .center([-152.5, 65])
+            .translate([width * 0.15, height * 0.8])
+            .scale(scale * 0.3)
+
+        let projection = d3.geoTransform({
+            point: function (x, y) {
+                if (y < 50 && x < -140) {
+                    this.stream.point(...hawaii([x, y]));
+                }
+                else if (y > 50) {
+                    this.stream.point(...alaska([x, y]));
+                }
+                else {
+                    this.stream.point(...continental([x, y]));
+                }
+            }
+        });
+        return projection;
+    }
+
+    // Demonstration:
+    let width = 960;
+    let height = 500;
+    let scale = 800;
+
+    let svg = d3.select("usmap")
+        .append("svg")
         .attr("width", width)
         .attr("height", height);
 
-    const projection = d3.geoAlbersUsa().scale(1300).translate([487.5, 305]);
-    var path = d3.geoPath()
+    projection = geoMercatorUsa(width, height, scale);
+    path = d3.geoPath(projection);
+    path.pointRadius(2);
 
     svg.append("g")
         .attr("class", "states")
@@ -86,34 +127,67 @@ function generateUsMap(us, iata_locations) {
         .data(topojson.feature(us, us.objects.states).features)
         .enter().append("path")
         .attr("fill", "gray")
+        .attr("stroke", "black")
         .attr("d", path)
 
     // Filter IATA locations to those Alaska Airlines has
     let alaska_iatas = new Set(['ABQ', 'ADK', 'ADQ', 'ANC', 'ATL', 'AUS', 'BET', 'BLI', 'BNA', 'BOI', 'BOS', 'BRW', 'BUR', 'BWI', 'CDV', 'CHS', 'CUN', 'DCA', 'DEN', 'DFW', 'DTW', 'EWR', 'FAI', 'FLL', 'GDL', 'GEG', 'HAV', 'HNL', 'IAD', 'IAH', 'IND', 'JFK', 'JNU', 'KOA', 'KTN', 'LAS', 'LAX', 'LIH', 'LIR', 'LTO', 'LWS', 'MCI', 'MCO', 'MEX', 'MSP', 'MSY', 'MZT', 'OAK', 'OGG', 'OMA', 'OME', 'ONT', 'ORD', 'OTZ', 'PDX', 'PHL', 'PHX', 'PSG', 'PSP', 'PUW', 'PVR', 'RDU', 'SAN', 'SAT', 'SBA', 'SCC', 'SEA', 'SFO', 'SIT', 'SJC', 'SJD', 'SJO', 'SLC', 'SMF', 'SNA', 'STL', 'TPA', 'TUS', 'WRG', 'YAK', 'YVR', 'ZIH', 'ZLO']);
     let alaska_iata_locations = iata_locations.filter(function ({ iata, longitude, latitude }) { return alaska_iatas.has(iata); })
-    alaska_iata_locations.map(({ iata, longitude, latitude }) => {
-        try {
-            let g = svg.append("g");
-            g.attr("transform", `translate(${projection([longitude, latitude]).join(",")})`)
-                .append("circle").attr('r', 2);
 
-            g.append("text").text(iata).attr('y', -3).attr("font-size", ".5em")
-        } catch (error) {
-            console.log(iata, 'failed');
-        }
-    })
+    asa_points = alaska_iata_locations.map(({ iata, longitude, latitude }) => {
+        return { type: "Feature", 'iata': iata, geometry: { type: "Point", coordinates: [longitude, latitude] } };
+    });
+    // Draw city circles using path
+    svg.append("g")
+        .attr("class", "iatas")
+        .selectAll("path")
+        .data(asa_points)
+        .enter().append("path")
+        .attr("fill", "rgb(121, 273, 140)")
+        .attr("stroke", "none")
+        .attr("d", path)
+
+    // Draw city circles direct
+    // svg
+    //     .append("g")
+    //     .selectAll("circle")
+    //     .data(asa_points)
+    //     .join("circle")
+    //     .attr("transform", d => {
+    //         const [cx, cy] = path.centroid(d);
+    //         return `translate(${cx}, ${cy})`;
+    //     })
+    //     .attr("r", 2)
+    //     .style("fill", "red");
+
+    svg
+        .append("g")
+        .selectAll("text")
+        .data(asa_points)
+        .join("text")
+        .attr("transform", d => {
+            const [cx, cy] = path.centroid(d);
+            return `translate(${cx}, ${cy})`;
+        })
+        .text(d => { return d.iata; })
+        .attr('x', -9)
+        .attr('fill', 'black')
+        .attr('y', -5)
+        .attr("font-size", ".65em");
 }
+
+var us;
 
 // Load city-city distance dictionary from CSV file.
 Promise.all([
     d3.csv('./city_pair_alaska_miles.csv', d3.autoType),
     d3.csv('./airport_locations.csv', d3.autoType),
-    d3.json('https://cdn.jsdelivr.net/npm/us-atlas@3/states-albers-10m.json')
+    d3.json('https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json')
 ]).then(
     function (initialize) {
         let city_pair_alaska_miles = initialize[0];
         let iata_locations = initialize[1];
-        let us = initialize[2]
+        us = initialize[2]
         // ex. city_pair_alaska_miles[0] -> {start: 'ABQ', destination: 'SEA', miles: '1178'}
         // dist_map['ABQ_SEA'] -> 1178
         city_pair_alaska_miles.forEach(element => {
