@@ -110,7 +110,7 @@ function generateUsMap() {
     }
 
     let width = 960;
-    let height = 500;
+    let height = 550;
     let scale = 800;
 
     svg = d3.select("usmap")
