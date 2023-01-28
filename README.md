@@ -1,5 +1,12 @@
 # AiportMileageRunner
- Given airports and mileage between them, find mileage runs to get status 
+
+Live: [Airport Mileage Calculator](http://www.tetralark.com/AirportMileageCalculator/)
+
+Allows one to try out different routes and see how many Alaska Airlines base miles one will get.
+
+# Python Script
+
+Given airports and mileage between them, find mileage runs to get status 
 
 ```js
 > get_airmiles.py
