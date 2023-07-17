@@ -5,10 +5,10 @@ function submit_form(event) {
     content_box.value = content_box.value.toUpperCase();
     let queryset = content_box.value;
     // Split query up by commas into separate routes
-    let querys = queryset.split(',')
+    let queries = queryset.split(',')
     let routes = [];
-    for (const query in querys) {
-        let parts = querys[query].match(/[^ ]+/g);
+    for (const query in queries) {
+        let parts = queries[query].match(/[^ ]+/g);
         let route = [];
         if (parts.length <= 1) {
             continue; // Need at least 2 cities in route, skip.
@@ -16,9 +16,8 @@ function submit_form(event) {
         for (let i = 0; i < parts.length - 1; i++) {
             let a = parts[i];
             let b = parts[i + 1];
-            let key = getEdgeKey(a, b);
-            let dist = dist_map[key]; // undefined if edge not there.
-            route.push([a, b, dist]);
+            let [dist, in_db] = getDistance(a, b); // get distance from getDistance function
+            route.push([a, b, dist, in_db]);
         }
         routes.push(route);
     }
@@ -27,9 +26,43 @@ function submit_form(event) {
         event.preventDefault(); // Don't reload page
 }
 
+
 function getEdgeKey(start, destination) {
     return start + '_' + destination;
 }
+
+// Calculate distances, either from alaska mapping (true), or estimated by dist (false)
+function getDistance(airport1, airport2) {
+    var key = getEdgeKey(airport1, airport2);
+    if (dist_map[key]) {
+        return [dist_map[key], true];
+    } else {
+        // Get the latitude and longitude for the two airports
+        var lat1 = airportData[airport1][0];
+        var lon1 = airportData[airport1][1];
+        var lat2 = airportData[airport2][0];
+        var lon2 = airportData[airport2][1];
+
+        // Calculate the great circle distance between the two airports
+        // This uses the Haversine formula
+        var R = 3958.8; // Radius of the earth in miles
+        var dLat = deg2rad(lat2-lat1);
+        var dLon = deg2rad(lon2-lon1); 
+        var a = 
+            Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
+            Math.sin(dLon/2) * Math.sin(dLon/2)
+            ; 
+        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+        var d = R * c; // Distance in miles
+        return [Math.floor(d), false]; // Return to the closest mile
+    }
+}
+
+function deg2rad(deg) {
+  return deg * (Math.PI/180)
+}
+
 
 function generate_route_html(single_route) {
     let total_distance = 0;
@@ -38,10 +71,11 @@ function generate_route_html(single_route) {
         start = trip[0];
         destination = trip[1];
         miles = trip[2];
+        in_db = trip[3]
         if (miles) {
             total_distance += miles;
         }
-        output += `<tr><td>${start} → ${destination}</td><td>${miles ? miles : '<em>Not in database</em>'}</td></tr>`
+        output += `<tr><td>${start} → ${destination}</td><td>${miles ? miles : '<em>Not in database</em>'}${in_db ? '':'*'}</td></tr>`
     });
     output += `<tr><td><strong>Total</strong></td><td>${total_distance}</td></tr>`
     output += '</table>'
@@ -179,16 +213,24 @@ function draw_routes(routes) {
 var us;
 var iata_location_map = {};
 
+// IATA: lat/long mapping
+var airportData;
+
 // Load city-city distance dictionary from CSV file.
 Promise.all([
     d3.csv('./city_pair_alaska_miles.csv', d3.autoType),
     d3.csv('./airport_locations.csv', d3.autoType),
+    d3.csv('./airports_corrected.csv', d3.autoType),
     d3.json('https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json')
 ]).then(
     function (initialize) {
         let city_pair_alaska_miles = initialize[0];
         let iata_locations = initialize[1];
-        us = initialize[2]
+        airportData = initialize[2].reduce(function(obj, item){
+            obj[item.IATA] = [item.lat, item.long];
+            return obj;
+        }, {});
+        us = initialize[3]
         // ex. city_pair_alaska_miles[0] -> {start: 'ABQ', destination: 'SEA', miles: '1178'}
         // dist_map['ABQ_SEA'] -> 1178
         city_pair_alaska_miles.forEach(element => {
