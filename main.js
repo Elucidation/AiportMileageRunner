@@ -36,27 +36,30 @@ function getDistance(airport1, airport2) {
     var key = getEdgeKey(airport1, airport2);
     if (dist_map[key]) {
         return [dist_map[key], true];
-    } else {
-        // Get the latitude and longitude for the two airports
-        var lat1 = airportData[airport1][0];
-        var lon1 = airportData[airport1][1];
-        var lat2 = airportData[airport2][0];
-        var lon2 = airportData[airport2][1];
-
-        // Calculate the great circle distance between the two airports
-        // This uses the Haversine formula
-        var R = 3958.8; // Radius of the earth in miles
-        var dLat = deg2rad(lat2-lat1);
-        var dLon = deg2rad(lon2-lon1); 
-        var a = 
-            Math.sin(dLat/2) * Math.sin(dLat/2) +
-            Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
-            Math.sin(dLon/2) * Math.sin(dLon/2)
-            ; 
-        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
-        var d = R * c; // Distance in miles
-        return [Math.floor(d), false]; // Return to the closest mile
+    } 
+    if (!airportData[airport1] || !airportData[airport2]) {
+        // start or end destination not in airportData.
+        return [null, false];
     }
+    // Get the latitude and longitude for the two airports
+    var lat1 = airportData[airport1][0];
+    var lon1 = airportData[airport1][1];
+    var lat2 = airportData[airport2][0];
+    var lon2 = airportData[airport2][1];
+
+    // Calculate the great circle distance between the two airports
+    // This uses the Haversine formula
+    var R = 3958.8; // Radius of the earth in miles
+    var dLat = deg2rad(lat2-lat1);
+    var dLon = deg2rad(lon2-lon1); 
+    var a = 
+        Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
+        Math.sin(dLon/2) * Math.sin(dLon/2)
+        ; 
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+    var d = R * c; // Distance in miles
+    return [Math.floor(d), false]; // Return to the closest mile
 }
 
 function deg2rad(deg) {
